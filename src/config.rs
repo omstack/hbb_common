@@ -97,8 +97,8 @@ lazy_static::lazy_static! {
     pub static ref APP_HOME_DIR: RwLock<String> = Default::default();
 }
 
-pub const LINK_DOCS_HOME: &str = "https://rustdesk.com/docs/en/";
-pub const LINK_DOCS_X11_REQUIRED: &str = "https://rustdesk.com/docs/en/manual/linux/#x11-required";
+pub const LINK_DOCS_HOME: &str = "https://desk.yscdn.top/docs/en/";
+pub const LINK_DOCS_X11_REQUIRED: &str = "https://desk.yscdn.top/docs/en/manual/linux/#x11-required";
 
 lazy_static::lazy_static! {
     pub static ref HELPER_URL: HashMap<&'static str, &'static str> = HashMap::from([
@@ -955,6 +955,31 @@ impl Config {
             }
         }
         return RENDEZVOUS_SERVERS.iter().map(|x| x.to_string()).collect();
+    }
+
+    /// The HTTP API server of the deployment this client is configured for.
+    ///
+    /// The API server runs on the same host as the rendezvous server, two
+    /// ports below the rendezvous port (21116 -> 21114). Resolving it from the
+    /// rendezvous server keeps the client on one deployment instead of falling
+    /// back to the public `admin.rustdesk.com`.
+    pub fn get_api_server_base() -> String {
+        let host = Self::get_rendezvous_server();
+        if host.is_empty() {
+            return String::new();
+        }
+        let s = crate::socket_client::increase_port(&host, -2);
+        if s == host {
+            // The host carries no port, so the API port is implied.
+            let s = if crate::is_ipv6_str(&s) && !s.starts_with('[') {
+                format!("[{s}]")
+            } else {
+                s
+            };
+            format!("http://{}:{}", s, RENDEZVOUS_PORT - 2)
+        } else {
+            format!("http://{}", s)
+        }
     }
 
     pub fn reset_online() {
