@@ -508,14 +508,11 @@ pub const VER_TYPE_RUSTDESK_CLIENT: &str = "rustdesk-client";
 pub const VER_TYPE_RUSTDESK_SERVER: &str = "rustdesk-server";
 
 pub fn version_check_request(typ: String) -> (VersionCheckRequest, String) {
-    // The upstream build polls api.rustdesk.com here and reports the device
-    // fingerprint (CPU, MAC, OS) with the request. This build asks the
-    // deployment's own server instead, so that data stays on the operator's
-    // infrastructure.
-    let url = format!(
-        "{}/version/latest",
-        config::Config::get_api_server_base()
-    );
+    // The upstream build polls its public API here and reports the device
+    // fingerprint (CPU, MAC, OS) with the request. Telemetry is non-functional
+    // traffic, so this build sends it to the info host (deski.yscdn.top), kept
+    // separate from the core relay/ID host.
+    let url = format!("https://{}/version/latest", config::INFO_HOST);
 
     use sysinfo::System;
     let system = System::new();

@@ -97,8 +97,12 @@ lazy_static::lazy_static! {
     pub static ref APP_HOME_DIR: RwLock<String> = Default::default();
 }
 
-pub const LINK_DOCS_HOME: &str = "https://desk.yscdn.top/docs/en/";
-pub const LINK_DOCS_X11_REQUIRED: &str = "https://desk.yscdn.top/docs/en/manual/linux/#x11-required";
+/// Host for non-functional traffic: documentation and telemetry. Kept apart
+/// from the core service host so telemetry never shares a path with relay/ID traffic.
+pub const INFO_HOST: &str = "deski.yscdn.top";
+
+pub const LINK_DOCS_HOME: &str = "https://deski.yscdn.top/docs/en/";
+pub const LINK_DOCS_X11_REQUIRED: &str = "https://deski.yscdn.top/docs/en/manual/linux/#x11-required";
 
 lazy_static::lazy_static! {
     pub static ref HELPER_URL: HashMap<&'static str, &'static str> = HashMap::from([
@@ -962,7 +966,7 @@ impl Config {
     /// The API server runs on the same host as the rendezvous server, two
     /// ports below the rendezvous port (21116 -> 21114). Resolving it from the
     /// rendezvous server keeps the client on one deployment instead of falling
-    /// back to the public `admin.rustdesk.com`.
+    /// back to the public API server.
     pub fn get_api_server_base() -> String {
         let host = Self::get_rendezvous_server();
         if host.is_empty() {
